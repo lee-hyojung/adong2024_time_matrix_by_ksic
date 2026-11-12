@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>출퇴근 시간 안에 닿는 산업별 일자리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sea:#E4EBEE; --ink:#1B2A31; --muted:#56666E; --panel:rgba(255,255,255,.95); --edge:rgba(27,42,49,.14);
+  --btn:#FFFFFF; --btn-on:#1B2A31; --btn-on-ink:#FFFFFF; --out:#D3DADD; --line:rgba(255,255,255,.6);
+  --sgg:rgba(27,42,49,.5); --sido:rgba(27,42,49,.88); --casing:rgba(255,255,255,.55);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --sea:#0E1920; --ink:#E4ECEF; --muted:#9CACB3; --panel:rgba(16,27,33,.95); --edge:rgba(228,236,239,.14);
+  --btn:#16252C; --btn-on:#E4ECEF; --btn-on-ink:#0E1920; --out:#26333A; --line:rgba(14,25,32,.5);
+  --sgg:rgba(228,236,239,.45); --sido:rgba(228,236,239,.88); --casing:rgba(14,25,32,.55); } }
+:root[data-theme="dark"]{ --sea:#0E1920; --ink:#E4ECEF; --muted:#9CACB3; --panel:rgba(16,27,33,.95); --edge:rgba(228,236,239,.14);
+  --btn:#16252C; --btn-on:#E4ECEF; --btn-on-ink:#0E1920; --out:#26333A; --line:rgba(14,25,32,.5);
+  --sgg:rgba(228,236,239,.45); --sido:rgba(228,236,239,.88); --casing:rgba(14,25,32,.55); }
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;min-height:600px;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--sea);color:var(--ink);overflow:hidden;position:relative}
+#map{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.dong{stroke:none;cursor:pointer}
+.lvl{fill:none;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+#dongL{stroke:var(--line);stroke-width:.6px}#sggL{stroke:var(--sgg);stroke-width:.9px}#sidoC{stroke:var(--casing);stroke-width:3px}#sidoL{stroke:var(--sido);stroke-width:1.4px}
+#hov,#pin{fill:none;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round}#hov{stroke:#E09A12;stroke-width:2.2px}#pin{stroke:#1B2A31;stroke-width:2.6px}
+.panel{position:absolute;background:var(--panel);border:1px solid var(--edge);border-radius:10px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#head{top:calc(env(safe-area-inset-top,0px) + 14px);left:14px;padding:15px 17px 13px;width:min(390px,calc(100vw - 28px))}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+h1{font-size:1.12rem;line-height:1.3;font-weight:600;margin:0 0 3px;letter-spacing:-.01em}
+.sub{font-size:.76rem;color:var(--muted);margin:0 0 9px;line-height:1.5}
+.cur{display:none;font-size:.76rem;color:var(--muted);margin:3px 0 0;line-height:1.45}
+.row{margin:0 0 8px}.lab{font-size:.7rem;color:var(--muted);margin:0 0 3px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg{display:grid;border:1px solid var(--edge);border-radius:8px;overflow:hidden}
+.seg button,.yrs button{font:inherit;font-size:.8rem;padding:6px 2px;border:0;background:var(--btn);color:var(--ink);cursor:pointer;line-height:1.2}
+.seg button+button{border-left:1px solid var(--edge)}
+.seg button[aria-pressed="true"],.yrs button[aria-pressed="true"]{background:var(--btn-on);color:var(--btn-on-ink);font-weight:600}
+.yrs{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.yrs button{font-size:.76rem;padding:5px 0;border-radius:6px;border:1px solid var(--edge);font-variant-numeric:tabular-nums}
+.yrs button[aria-pressed="true"]{border-color:var(--btn-on)}
+select,#q{width:100%;font:inherit;font-size:.84rem;padding:7px 8px;border:1px solid var(--edge);border-radius:8px;background:var(--btn);color:var(--ink)}
+button:focus-visible,select:focus-visible,#q:focus-visible{outline:2px solid #C0622D;outline-offset:1px}
+.def{font-size:.72rem;color:var(--muted);margin:5px 0 0;line-height:1.5}
+.bar{display:grid;height:11px;border-radius:3px;overflow:hidden;margin-top:8px}
+.ticks{display:grid;font-size:.64rem;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+.ticks span{transform:translateX(-50%);white-space:nowrap}.ticks span:first-child{transform:none}
+.keys{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.7rem;color:var(--muted);margin-top:6px}
+.keys span{display:inline-flex;align-items:center;gap:5px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px}.ln{display:inline-block;width:18px;height:0}
+.views{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.views button,.toggle,.rtoggle{font:inherit;font-size:.74rem;padding:4px 8px;border-radius:7px;border:1px solid var(--edge);background:var(--btn);color:var(--ink);cursor:pointer}
+.toggle,.rtoggle{display:none;font-size:.76rem;padding:5px 10px;white-space:nowrap}
+#read{right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);padding:13px 16px;width:min(320px,calc(100vw - 28px))}
+#read .name{font-size:1rem;font-weight:600;margin:0}#read .where{font-size:.74rem;color:var(--muted);margin:2px 0 0}
+#read .big{font-size:1.5rem;font-weight:500;margin:6px 0 0;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+#read .big small{font-size:.82rem;color:var(--muted);font-weight:400;margin-left:3px}
+.stats{display:grid;grid-template-columns:auto auto;gap:3px 14px;font-size:.78rem;margin:8px 0 0;font-variant-numeric:tabular-nums}
+.stats dt{color:var(--muted)}.stats dd{margin:0;text-align:right}
+.spark{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;align-items:end;height:50px;margin-top:10px}
+.spark i{display:block;background:#FEC44F;border-radius:2px 2px 0 0;min-height:1px}.spark i.on{background:#CC4C02}
+.sparkx{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;font-size:.6rem;color:var(--muted);text-align:center;margin-top:2px;font-variant-numeric:tabular-nums}
+.how{font-size:.7rem;color:var(--muted);margin:7px 0 0;line-height:1.5}
+#err{display:none;left:50%;top:50%;transform:translate(-50%,-50%);padding:14px 18px;font-size:.9rem;max-width:min(460px,calc(100vw - 40px));line-height:1.5}
+#err small{color:var(--muted);font-size:.78rem}
+@media (max-width:680px){
+  #head{padding:10px 12px 9px;max-height:calc(100% - 170px);overflow:auto;-webkit-overflow-scrolling:touch}
+  h1{font-size:1rem;margin:2px 0 0}
+  .toggle,.rtoggle{display:inline-block}
+  .cur{display:block}
+  #head:not(.open) #ctrl{display:none}
+  #head.open .cur{display:none}
+  #head.open #ctrl{margin-top:8px}
+  #read{left:10px;right:10px;width:auto;padding:10px 12px}
+  .rtoggle{position:absolute;top:8px;right:10px;padding:3px 8px;font-size:.72rem}
+  #readc{padding-right:78px}
+  #read.more #readc{padding-right:0}
+  #read:not(.more) .how,#read:not(.more) .spark,#read:not(.more) .sparkx{display:none}
+  #read:not(.more) .stats dt:nth-of-type(n+2),#read:not(.more) .stats dd:nth-of-type(n+2){display:none}
+  #read .big{font-size:1.3rem;margin-top:4px}
+}
+</style>
+</head>
+<body>
+<svg id="map" role="img" aria-label="행정동별 출퇴근 시간 안에 닿는 산업별 일자리 지도"></svg>
+<section id="head" class="panel">
+  <div class="top"><h1>출퇴근 시간 안에 닿는 일자리</h1><button id="toggle" class="toggle" aria-expanded="false" aria-controls="ctrl">설정 ▾</button></div>
+  <p class="cur" id="cur"></p>
+  <div id="ctrl">
+    <p class="sub">행정동에서 출퇴근 시간 30분·60분 안에 닿는 일자리를 산업 대분류별로 보여 줘요. 2024년 행정동 경계 기준이에요.</p>
+    <div class="row"><input id="q" list="dongs" placeholder="동 이름으로 찾기 (예: 대학동)" autocomplete="off" aria-label="동 이름으로 찾기"><datalist id="dongs"></datalist></div>
+    <div class="row"><p class="lab">산업 (대분류)</p><select id="ind" aria-label="산업 선택"></select></div>
+    <div class="row"><p class="lab">이동 수단</p><div class="seg" id="mode" style="grid-template-columns:repeat(3,1fr)">
+      <button data-v="car" aria-pressed="true">자동차</button><button data-v="pt" aria-pressed="false">대중교통</button><button data-v="best" aria-pressed="false">빠른 쪽</button></div></div>
+    <div class="row two">
+      <div><p class="lab">기준 시간</p><div class="seg" id="thr" style="grid-template-columns:repeat(2,1fr)"><button data-v="30" aria-pressed="false">30분</button><button data-v="60" aria-pressed="true">60분</button></div></div>
+      <div><p class="lab">값</p><div class="seg" id="val" style="grid-template-columns:repeat(2,1fr)"><button data-v="n" aria-pressed="true">일자리 수</button><button data-v="share" aria-pressed="false">전국 대비</button></div></div>
+    </div>
+    <div class="row"><p class="lab">연도</p><div class="yrs" id="years"></div><p class="def" id="pnote"></p></div>
+    <div class="views" role="group" aria-label="보기 범위">
+      <button data-v="all">전국</button><button data-v="metro">수도권</button><button data-v="busan">부산·울산</button><button data-v="daegu">대구</button><button data-v="daejeon">대전·세종</button><button data-v="gwangju">광주</button><button data-v="jeju">제주</button>
+    </div>
+  </div>
+  <div id="legend"></div>
+</section>
+<section id="read" class="panel"><button id="rtoggle" class="rtoggle" aria-expanded="false" aria-controls="readc">자세히 ▴</button><div id="readc" aria-live="polite"><p class="how">불러오는 중…</p></div></section>
+<section id="err" class="panel">지도를 불러오지 못했어요.</section>
+<script src="lib/d3.min.js"></script>
+<script>window.d3||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"><\/script>')</script>
+<script src="lib/topojson-client.min.js"></script>
+<script>window.topojson||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson-client/3.1.0/topojson-client.min.js"><\/script>')</script>
+<script>
+(async function(){
+const err=m=>{ const e=document.getElementById('err'); e.style.display='block'; e.innerHTML='지도를 불러오지 못했어요.<br><small>'+m+'</small>'; };
+if(!window.d3||!window.topojson){ err('지도 라이브러리를 불러오지 못했어요. 저장소에 lib 폴더가 있는지 확인하세요.'); return; }
+if(location.protocol==='file:'){ err('파일을 더블클릭해 열면 자료를 읽을 수 없어요. GitHub Pages 주소로 열어 주세요.'); return; }
+const getJSON=async f=>{ const r=await fetch(f).catch(()=>{ throw f+' 를 받지 못했어요.'; }); if(!r.ok) throw f+' 가 없어요(HTTP '+r.status+').'; return r.json(); };
+async function getGz(f){ const r=await fetch(f); if(!r.ok) throw f+' 가 없어요(HTTP '+r.status+').';
+  const buf=new Uint8Array(await r.arrayBuffer()); if(!(buf[0]===0x1f&&buf[1]===0x8b)) return buf;
+  if(!('DecompressionStream' in window)) throw '이 브라우저는 압축 자료를 풀지 못해요. 크롬·엣지·사파리 최신판으로 열어 주세요.';
+  const s=new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip')); return new Uint8Array(await new Response(s).arrayBuffer()); }
+let IDX,BND,DG;
+try{ [IDX,BND,DG]=await Promise.all([getJSON('data/index.json'),getJSON('data/bnd.topo.json'),getJSON('data/dongs.json')]); }catch(e){ err(String(e)); return; }
+const N=IDX.N, YEARS=IDX.years, NY=YEARS.length, NV=IDX.vars.length, NA=4294967295, Y0=YEARS[0], Y1=YEARS[NY-1];
+const MODE={car:'자동차',pt:'대중교통',best:'빠른 쪽'}, MI={car:0,pt:1,best:2};
+// ---------- 상태 (첫 화면: 2024년 · 전체 · 자동차 · 60분 · 일자리 수)
+const S={ind:'total',mode:'car',thr:60,val:'n',year:Y1,arr:null,pin:-1};
+{ const h=new URLSearchParams(location.hash.slice(1));
+  if(h.get('i')&&IDX.inds.some(d=>d.c===h.get('i'))) S.ind=h.get('i'); if(MODE[h.get('m')]) S.mode=h.get('m');
+  if(['30','60'].includes(h.get('t'))) S.thr=+h.get('t'); if(['n','share'].includes(h.get('v'))) S.val=h.get('v');
+  if(h.get('y')==='diff') S.year='diff'; else if(YEARS.includes(+h.get('y'))) S.year=+h.get('y'); }
+const indName=()=>{ const d=IDX.inds.find(x=>x.c===S.ind); return d.c==='total'? '전체 산업' : `${d.c} ${d.n}`; };
+const vi=()=>MI[S.mode]*2+(S.thr===60?1:0);
+// 값: 연도 yi, 동 i 의 닿는 일자리 수 (없으면 null). share 면 그 해 전국 이 산업 일자리 대비 %
+const raw=(yi,k,i)=>{ const v=S.arr[(yi*NV+k)*N+i]; return v===NA? null : v; };
+const val=(yi,i)=>{ const v=raw(yi,vi(),i); if(v===null) return null; return S.val==='n'? v : v/IDX.nat[S.ind][yi]*100; };
+const cur=i=>{ if(S.year==='diff'){ const a=val(0,i), b=val(NY-1,i); return (a===null||b===null)? null : b-a; } return val(YEARS.indexOf(S.year),i); };
+// ---------- 숫자 표기
+const man=v=>{ const a=Math.abs(v); return a>=1e8? (a/1e8).toFixed(a>=1e9?0:1).replace(/\.0$/,'')+'억' : a>=1e4? Math.round(a/1e4).toLocaleString()+'만' : Math.round(a).toLocaleString(); };
+const pc=v=>{ const a=Math.abs(v); return (a>=10? a.toFixed(0) : a>=1? a.toFixed(1) : a.toFixed(2))+(S.year==='diff'?'%p':'%'); };
+const f=v=> S.val==='n'? man(v) : pc(v);
+const sg=v=> (v>0?'+':v<0?'−':'')+f(v);
+const full=v=> S.val==='n'? Math.round(v).toLocaleString()+'<small>개</small>' : pc(v).replace(/(%p?)$/,'<small>$1</small>');
+const nice=v=>{ if(v<=0) return 0; const p=Math.pow(10,Math.floor(Math.log10(v))-1); return +(Math.round(v/p)*p).toPrecision(2); };
+// ---------- 색
+const PAL=["#FFFFD4","#FEE391","#FEC44F","#FE9929","#EC7014","#CC4C02","#8C2D04"];     // YlOrBr
+const BURD=["#2166AC","#67A9CF","#D1E5F0","#F7F7F7","#FDDBC7","#EF8A62","#B2182B"];    // BuRd: 줄면 파랑, 늘면 빨강
+const ramp=n=>{ if(n<=0) return [PAL[3]]; const o=[]; for(let k=0;k<=n;k++) o.push(PAL[Math.round(k*(PAL.length-1)/n)]); return o; };
+let BR=[], COLS=[];
+function scale(){   // 한 해 값: 10개 연도 값을 모아 분위수로 (연도가 달라도 같은 색 기준). 차이: 변화 크기의 분위수로 좌우 대칭
+  if(S.year==='diff'){ const a=[]; for(let i=0;i<N;i++){ const d=cur(i); if(d!==null&&d!==0) a.push(Math.abs(d)); } a.sort((x,y)=>x-y);
+    const q=p=> a.length? a[Math.min(a.length-1,Math.floor(p*(a.length-1)))] : 1; const b1=nice(q(.3))||1, b2=Math.max(nice(q(.7)),b1*1.5), b3=Math.max(nice(q(.94)),b2*1.5);
+    BR=[-b3,-b2,-b1,b1,b2,b3]; COLS=BURD; return; }
+  const a=[]; for(let yi=0;yi<NY;yi++) for(let i=0;i<N;i++){ const v=val(yi,i); if(v!==null&&v>0) a.push(v); } a.sort((x,y)=>x-y);
+  const out=[]; if(a.length) for(const p of [.15,.3,.45,.6,.75,.9]){ const b=nice(a[Math.floor(p*(a.length-1))]); if(b>a[0]&&(!out.length||b>out[out.length-1])) out.push(b); }
+  BR=out; COLS=ramp(out.length); }
+const klass=v=>{ if(S.year==='diff') return v<=BR[0]?0 : v<=BR[1]?1 : v<=BR[2]?2 : v<BR[3]?3 : v<BR[4]?4 : v<BR[5]?5 : 6; let k=0; while(k<BR.length&&v>=BR[k]) k++; return k; };
+const fill=i=>{ const v=cur(i); return v===null? 'var(--out)' : COLS[klass(v)]; };
+// ---------- 지도
+const svg=d3.select("#map"), g=svg.append("g"), obj=BND.objects.dong;
+const ix=new Map(DG.cd.map((c,i)=>[c,i])), FC=topojson.feature(BND,obj), sgc=d=>d.properties.ADM_CD.slice(0,5);
+FC.features.forEach(d=>{ d.i=ix.has(d.properties.ADM_CD)? ix.get(d.properties.ADM_CD) : -1; });
+const proj=d3.geoIdentity().reflectY(true), path=d3.geoPath(proj);
+const dongs=g.append("g").selectAll("path").data(FC.features).join("path").attr("class","dong");
+const dongL=g.append("path").attr("id","dongL").attr("class","lvl"), sggL=g.append("path").attr("id","sggL").attr("class","lvl"),
+      sidoC=g.append("path").attr("id","sidoC").attr("class","lvl"), sidoL=g.append("path").attr("id","sidoL").attr("class","lvl"),
+      pinP=g.append("path").attr("id","pin"), hovP=g.append("path").attr("id","hov");
+const MDG=topojson.mesh(BND,obj,(a,b)=>a!==b), MS=topojson.mesh(BND,obj,(a,b)=>a!==b&&sgc(a)!==sgc(b)), MD=topojson.mesh(BND,obj,(a,b)=>a!==b&&sgc(a).slice(0,2)!==sgc(b).slice(0,2));
+const byI=new Map(FC.features.map(d=>[d.i,d]));
+let Wc=0,Hc=0,left=0; const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const zoom=d3.zoom().scaleExtent([1,60]).on("zoom",e=>{ g.attr("transform",e.transform); dongL.style("opacity",Math.min(1,.3+e.transform.k*.18)); });
+svg.call(zoom).on("dblclick.zoom",null);
+function size(){ const r=svg.node().getBoundingClientRect(); if(r.width<50||r.height<50) return; if(Math.abs(r.width-Wc)<1&&Math.abs(r.height-Hc)<1) return;
+  Wc=r.width; Hc=r.height; svg.attr("viewBox",`0 0 ${Wc} ${Hc}`); left=Wc>780?420:0;
+  const pad=Math.min(Wc,Hc)*0.04, top=Wc>780?0:document.getElementById('head').offsetHeight+18, bottom=Wc>780?0:document.getElementById('read').offsetHeight+18;
+  proj.fitExtent([[left+pad,top+pad],[Wc-pad,Hc-bottom-pad]],FC);
+  dongs.attr("d",path); dongL.attr("d",path(MDG)); sggL.attr("d",path(MS)); sidoC.attr("d",path(MD)); sidoL.attr("d",path(MD)); hovP.attr("d",null); pinP.attr("d",S.pin>=0?path(byI.get(S.pin)):null);
+  svg.call(zoom.transform,d3.zoomIdentity); }
+function toBounds(b,dur){ const [[x0,y0],[x1,y1]]=b, k=Math.min(60,0.85/Math.max((x1-x0)/(Wc-left),(y1-y0)/Hc));
+  svg.transition().duration(reduce?0:dur).call(zoom.transform,d3.zoomIdentity.translate(left+(Wc-left)/2,Hc/2).scale(k).translate(-(x0+x1)/2,-(y0+y1)/2)); }
+const boxB=b=>{ const [x0,y1]=proj([b[0],b[1]]), [x1,y0]=proj([b[2],b[3]]); return [[x0,y0],[x1,y1]]; };
+new ResizeObserver(size).observe(svg.node()); size();
+// ---------- 자료 읽기와 그리기
+const cache=new Map();
+async function load(){ const k=S.ind; d3.select("#readc").html(`<p class="how">${indName()} 자료를 불러오는 중…</p>`);
+  try{ if(!cache.has(k)) cache.set(k,getGz(`data/${k}.bin.gz`).then(u=>new Uint32Array(u.buffer,u.byteOffset,NY*NV*N)));
+    const a=await cache.get(k); if(S.ind!==k) return; S.arr=a; draw(); }catch(e){ err(String(e)); } }
+function draw(){ if(!S.arr) return; scale(); dongs.attr("fill",d=>d.i<0?'var(--out)':fill(d.i)); legend(); show(); updCur();
+  history.replaceState(null,"",`#i=${S.ind}&m=${S.mode}&t=${S.thr}&v=${S.val}&y=${S.year}`); }
+function legend(){ const L=d3.select("#legend").html(""), n=COLS.length, dif=S.year==='diff';
+  const tk=[""].concat(BR.map(b=> dif? sg(b) : f(b)));
+  L.append("div").attr("class","bar").style("grid-template-columns",`repeat(${n},1fr)`).selectAll("span").data(COLS).join("span").style("background",c=>c);
+  L.append("div").attr("class","ticks").style("grid-template-columns",`repeat(${n},1fr)`).selectAll("span").data(tk).join("span").text(t=>t);
+  const unit= dif? `${Y0}→${Y1}년 변화 (${S.val==='n'?'개':'%p'})` : (S.val==='n'? `${S.thr}분 안에 닿는 일자리 수(개)` : `${S.thr}분 안에 닿는 일자리 ÷ 전국 일자리(%)`);
+  L.append("div").attr("class","keys").html(`<span>${unit}</span><span><i class="sw" style="background:var(--out)"></i>자료 없음</span><span><i class="ln" style="border-top:1.4px solid var(--sido)"></i>시도</span><span><i class="ln" style="border-top:1px solid var(--sgg)"></i>시군구</span>`); }
+const yname=()=> S.year==='diff'? `${Y0}→${Y1}년 변화` : S.year+'년';
+const updCur=()=>{ document.getElementById('cur').textContent=`${indName()} · ${MODE[S.mode]} · ${S.thr}분 · ${yname()}`; };
+const tagline=()=>`${yname()} · ${MODE[S.mode]} · 출퇴근 ${S.thr}분`;
+function summary(){ const R=d3.select("#readc"), dif=S.year==='diff', vs=[]; let best=-1,bv=-Infinity,inc=0,dec=0;
+  for(let i=0;i<N;i++){ const v=cur(i); if(v===null) continue; vs.push(v); if(v>bv){ bv=v; best=i; } if(v>0) inc++; else if(v<0) dec++; }
+  vs.sort((a,b)=>a-b); const med=vs.length? vs[Math.floor(vs.length/2)] : 0, n0=IDX.nat[S.ind][0], n1=IDX.nat[S.ind][NY-1];
+  if(dif){ R.html(`<p class="name">${indName()}</p><p class="where">${tagline()}</p><p class="big">${sg(med).replace(/(만|억|%p)$/,'<small>$1</small>')}<small> (동 중앙값)</small></p>
+    <dl class="stats"><dt>전국 일자리</dt><dd>${man(n0)} → ${man(n1)}</dd><dt>늘어난 동</dt><dd>${inc.toLocaleString()}곳</dd><dt>줄어든 동</dt><dd>${dec.toLocaleString()}곳</dd></dl>
+    <p class="how">동에 마우스를 올리거나 누르면 그 동의 10년 변화가 나와요. 2020년에 종사자 통계 작성 방식이 바뀌어 전국 합계가 9.8% 뛰었으니, 일자리 수의 증가에는 그 영향도 섞여 있어요.</p>`); return; }
+  const yi=YEARS.indexOf(S.year);
+  R.html(`<p class="name">${indName()}</p><p class="where">${tagline()}</p><p class="big">${full(med)}<small> (동 중앙값)</small></p>
+    <dl class="stats"><dt>전국 일자리</dt><dd>${Math.round(IDX.nat[S.ind][yi]).toLocaleString()}개</dd><dt>가장 많이 닿는 동</dt><dd>${f(bv)}${S.val==='n'?'개':''}</dd><dt></dt><dd>${best>=0?DG.g[best]+' '+DG.n[best]:''}</dd></dl>
+    <p class="how">동에 마우스를 올리거나 누르면 그 동의 값과 10년 변화가 나와요. 출퇴근 시간은 [출근(집→일터) + 퇴근(일터→집)] ÷ 2예요.</p>`); }
+function dong(i){ const R=d3.select("#readc"), dif=S.year==='diff', v=cur(i), ser=YEARS.map((y,yi)=>val(yi,i)), mx=Math.max(1e-9,...ser.map(x=>x||0));
+  const on=yi=> dif? (yi===0||yi===NY-1) : YEARS[yi]===S.year, yi=dif? NY-1 : YEARS.indexOf(S.year), jd=raw(yi,6,i);
+  const head=`<p class="name">${DG.n[i]}</p><p class="where">${DG.s[i]} ${DG.g[i]} · ${indName()}</p>`;
+  if(v===null){ R.html(head+`<p class="big">—</p><p class="how">이 동은 값이 없어요(사람이 살지 않거나 소요시간 자료가 없는 동).</p>`); return; }
+  const big= dif? sg(v).replace(/(만|억|%p)$/,'<small>$1</small>')+(S.val==='n'?'<small>개</small>':'') : full(v);
+  const line= dif? `<dt>${Y0}년 → ${Y1}년</dt><dd>${f(ser[0])} → ${f(ser[NY-1])}</dd>` : (S.val==='n'? `<dt>전국 대비</dt><dd>${(v/IDX.nat[S.ind][yi]*100).toFixed(1)}%</dd>` : `<dt>일자리 수</dt><dd>${Math.round(raw(yi,vi(),i)).toLocaleString()}개</dd>`);
+  R.html(head+`<p class="big">${big}</p><dl class="stats">${line}<dt>동 안 일자리(${YEARS[yi]}년)</dt><dd>${jd===null?'—':jd.toLocaleString()+'개'}</dd></dl>
+    <div class="spark" role="img" aria-label="연도별 값">${ser.map((x,k)=>`<i class="${on(k)?'on':''}" style="height:${Math.max(2,(x||0)/mx*100)}%" title="${YEARS[k]}년 ${x===null?'없음':f(x)}"></i>`).join('')}</div>
+    <div class="sparkx">${YEARS.map(y=>`<span>${String(y).slice(2)}</span>`).join('')}</div><p class="how">${tagline()}${S.val==='share'?' · 전국 이 산업 일자리 대비':''}</p>`); }
+let hov=-1; const show=()=>{ const i= hov>=0? hov : S.pin; if(i>=0) dong(i); else summary(); };
+dongs.on("pointerenter",(e,d)=>{ if(d.i<0||!S.arr) return; hov=d.i; hovP.attr("d",path(d)); show(); })
+     .on("pointerleave",()=>{ hov=-1; hovP.attr("d",null); if(S.arr) show(); })
+     .on("click",(e,d)=>{ if(d.i<0) return; S.pin= S.pin===d.i? -1 : d.i; pinP.attr("d",S.pin>=0?path(d):null); show(); });
+// ---------- 조작
+d3.select("#ind").selectAll("option").data(IDX.inds).join("option").attr("value",d=>d.c).text(d=>d.c==='total'?'전체 산업':`${d.c} ${d.n}`); d3.select("#ind").property("value",S.ind).on("change",function(){ S.ind=this.value; load(); });
+function seg(id,key,num){ d3.selectAll(`#${id} button`).attr("aria-pressed",function(){ return String(String(S[key])===this.dataset.v); })
+  .on("click",function(){ S[key]=num? +this.dataset.v : this.dataset.v; d3.selectAll(`#${id} button`).attr("aria-pressed",function(){ return String(String(S[key])===this.dataset.v); }); draw(); }); }
+seg("mode","mode"); seg("thr","thr",true); seg("val","val");
+function years(){ d3.select("#years").selectAll("button").data(YEARS.concat(['diff'])).join("button").text(d=>d==='diff'?`${String(Y0).slice(2)}→${String(Y1).slice(2)}`:d)
+  .attr("aria-pressed",d=>String(d===S.year)).attr("title",d=>d==='diff'?`${Y0}년과 ${Y1}년의 차이`:IDX.period[d]+' 산업분류').attr("aria-label",d=>d==='diff'?`${Y0}년에서 ${Y1}년까지의 변화`:null)
+  .on("click",(e,d)=>{ S.year=d; years(); draw(); });
+  d3.select("#pnote").text(S.year==='diff'? `${Y1}년 값 − ${Y0}년 값이에요. 대분류는 같은 글자끼리 이어요(분류 차수 ${IDX.period[Y0]} → ${IDX.period[Y1]}).`
+    : `${IDX.period[S.year]} 산업분류 기준이에요. 색 기준은 10개 연도를 모아 정해서, 연도를 바꿔도 같아요.`); }
+d3.selectAll(".views button").on("click",function(){ const v=this.dataset.v; if(v==='all') svg.transition().duration(reduce?0:650).call(zoom.transform,d3.zoomIdentity); else toBounds(boxB(IDX.views[v]),650); });
+// 동 이름 찾기
+const lab=i=>`${DG.n[i]} (${DG.s[i]} ${DG.g[i]})`, find=new Map(); for(let i=0;i<N;i++) find.set(lab(i),i);
+d3.select("#dongs").selectAll("option").data(d3.range(N)).join("option").attr("value",lab);
+d3.select("#q").on("change",function(){ let i=find.get(this.value.trim()); if(i===undefined){ const s=this.value.trim(); i=DG.n.findIndex(n=>n===s); if(i<0) i=DG.n.findIndex(n=>n.includes(s)&&s.length>1); }
+  if(i===undefined||i<0||!byI.has(i)) return; const d=byI.get(i); S.pin=i; pinP.attr("d",path(d)); const b=path.bounds(d), m=Math.max(b[1][0]-b[0][0],b[1][1]-b[0][1])*3;
+  const cx=(b[0][0]+b[1][0])/2, cy=(b[0][1]+b[1][1])/2; toBounds([[cx-m,cy-m],[cx+m,cy+m]],700); show(); if(mob()) setOpen(false); });
+// 모바일: 조작판 접기·펼치기
+const head=document.getElementById('head'), tg=document.getElementById('toggle'), mob=()=>window.matchMedia('(max-width:680px)').matches;
+const setOpen=o=>{ head.classList.toggle('open',o); tg.setAttribute('aria-expanded',String(o)); tg.textContent=o?'접기 ▴':'설정 ▾'; if(o) head.scrollTop=0; };
+tg.addEventListener('click',()=>setOpen(!head.classList.contains('open')));
+const rd=document.getElementById('read'), rt=document.getElementById('rtoggle');
+rt.addEventListener('click',()=>{ const m=!rd.classList.contains('more'); rd.classList.toggle('more',m); rt.setAttribute('aria-expanded',String(m)); rt.textContent=m?'간단히 ▾':'자세히 ▴'; });
+svg.on('pointerdown.close',()=>{ if(mob()&&head.classList.contains('open')) setOpen(false); });
+years(); load();
+})();
+</script>
+</body>
+</html>
