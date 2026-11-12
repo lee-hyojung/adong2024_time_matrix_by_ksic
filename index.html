@@ -64,7 +64,7 @@ button:focus-visible,select:focus-visible,#q:focus-visible{outline:2px solid #C0
 .stats{display:grid;grid-template-columns:auto auto;gap:3px 14px;font-size:.78rem;margin:8px 0 0;font-variant-numeric:tabular-nums}
 .stats dt{color:var(--muted)}.stats dd{margin:0;text-align:right}
 .spark{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;align-items:end;height:50px;margin-top:10px}
-.spark i{display:block;background:#FEC44F;border-radius:2px 2px 0 0;min-height:1px}.spark i.on{background:#CC4C02}
+.spark i{display:block;background:#93C393;border-radius:2px 2px 0 0;min-height:1px}.spark i.on{background:#0B5C55}
 .sparkx{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;font-size:.6rem;color:var(--muted);text-align:center;margin-top:2px;font-variant-numeric:tabular-nums}
 .how{font-size:.7rem;color:var(--muted);margin:7px 0 0;line-height:1.5}
 #err{display:none;left:50%;top:50%;transform:translate(-50%,-50%);padding:14px 18px;font-size:.9rem;max-width:min(460px,calc(100vw - 40px));line-height:1.5}
@@ -97,7 +97,7 @@ button:focus-visible,select:focus-visible,#q:focus-visible{outline:2px solid #C0
     <div class="row"><input id="q" list="dongs" placeholder="동 이름으로 찾기 (예: 대학동)" autocomplete="off" aria-label="동 이름으로 찾기"><datalist id="dongs"></datalist></div>
     <div class="row"><p class="lab">산업 (대분류)</p><select id="ind" aria-label="산업 선택"></select></div>
     <div class="row"><p class="lab">이동 수단</p><div class="seg" id="mode" style="grid-template-columns:repeat(3,1fr)">
-      <button data-v="car" aria-pressed="true">자동차</button><button data-v="pt" aria-pressed="false">대중교통</button><button data-v="best" aria-pressed="false">빠른 쪽</button></div></div>
+      <button data-v="car" aria-pressed="false">자동차</button><button data-v="pt" aria-pressed="false">대중교통</button><button data-v="best" aria-pressed="true">빠른 쪽</button></div></div>
     <div class="row two">
       <div><p class="lab">기준 시간</p><div class="seg" id="thr" style="grid-template-columns:repeat(2,1fr)"><button data-v="30" aria-pressed="false">30분</button><button data-v="60" aria-pressed="true">60분</button></div></div>
       <div><p class="lab">값</p><div class="seg" id="val" style="grid-template-columns:repeat(2,1fr)"><button data-v="n" aria-pressed="true">일자리 수</button><button data-v="share" aria-pressed="false">전국 대비</button></div></div>
@@ -129,8 +129,8 @@ let IDX,BND,DG;
 try{ [IDX,BND,DG]=await Promise.all([getJSON('data/index.json'),getJSON('data/bnd.topo.json'),getJSON('data/dongs.json')]); }catch(e){ err(String(e)); return; }
 const N=IDX.N, YEARS=IDX.years, NY=YEARS.length, NV=IDX.vars.length, NA=4294967295, Y0=YEARS[0], Y1=YEARS[NY-1];
 const MODE={car:'자동차',pt:'대중교통',best:'빠른 쪽'}, MI={car:0,pt:1,best:2};
-// ---------- 상태 (첫 화면: 2024년 · 전체 · 자동차 · 60분 · 일자리 수)
-const S={ind:'total',mode:'car',thr:60,val:'n',year:Y1,arr:null,pin:-1};
+// ---------- 상태 (첫 화면: 2024년 · 전체 · 빠른 쪽 · 60분 · 일자리 수)
+const S={ind:'total',mode:'best',thr:60,val:'n',year:Y1,arr:null,pin:-1};
 { const h=new URLSearchParams(location.hash.slice(1));
   if(h.get('i')&&IDX.inds.some(d=>d.c===h.get('i'))) S.ind=h.get('i'); if(MODE[h.get('m')]) S.mode=h.get('m');
   if(['30','60'].includes(h.get('t'))) S.thr=+h.get('t'); if(['n','share'].includes(h.get('v'))) S.val=h.get('v');
@@ -149,8 +149,8 @@ const sg=v=> (v>0?'+':v<0?'−':'')+f(v);
 const full=v=> S.val==='n'? Math.round(v).toLocaleString()+'<small>개</small>' : pc(v).replace(/(%p?)$/,'<small>$1</small>');
 const nice=v=>{ if(v<=0) return 0; const p=Math.pow(10,Math.floor(Math.log10(v))-1); return +(Math.round(v/p)*p).toPrecision(2); };
 // ---------- 색
-const PAL=["#FFFFD4","#FEE391","#FEC44F","#FE9929","#EC7014","#CC4C02","#8C2D04"];     // YlOrBr
-const BURD=["#2166AC","#67A9CF","#D1E5F0","#F7F7F7","#FDDBC7","#EF8A62","#B2182B"];    // BuRd: 줄면 파랑, 늘면 빨강
+const PAL=["#E9F1D4","#CFE0B5","#93C393","#4E9F7F","#1F7A6B","#0B5C55","#063A36"];     // 옅은 연두 → 짙은 녹색 (동 간 소요시간 지도의 녹색 단계를 뒤집어 씀)
+const BURD=["#D73027","#FC8D59","#FEE08B","#FFFFBF","#D9EF8B","#91CF60","#1A9850"];    // RdYlGn: 줄면 빨강, 가운데 노랑, 늘면 초록
 const ramp=n=>{ if(n<=0) return [PAL[3]]; const o=[]; for(let k=0;k<=n;k++) o.push(PAL[Math.round(k*(PAL.length-1)/n)]); return o; };
 let BR=[], COLS=[];
 function scale(){   // 한 해 값: 10개 연도 값을 모아 분위수로 (연도가 달라도 같은 색 기준). 차이: 변화 크기의 분위수로 좌우 대칭
